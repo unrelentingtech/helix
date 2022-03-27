@@ -80,6 +80,7 @@ impl EditorView {
         let theme = &editor.theme;
 
         // DAP: Highlight current stack frame position
+        #[cfg(feature = "dap")]
         let stack_frame = editor.debugger.as_ref().and_then(|debugger| {
             if let (Some(frame), Some(thread_id)) = (debugger.active_frame, debugger.thread_id) {
                 debugger
@@ -90,6 +91,7 @@ impl EditorView {
                 None
             }
         });
+        #[cfg(feature = "dap")]
         if let Some(frame) = stack_frame {
             if doc.path().is_some()
                 && frame
@@ -872,6 +874,7 @@ impl EditorView {
     ) -> EventResult {
         let config = cxt.editor.config();
         match event {
+            #[cfg(feature = "dap")]
             MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 row,
@@ -999,6 +1002,7 @@ impl EditorView {
                 EventResult::Consumed(None)
             }
 
+            #[cfg(feature = "dap")]
             MouseEvent {
                 kind: MouseEventKind::Up(MouseButton::Right),
                 row,
