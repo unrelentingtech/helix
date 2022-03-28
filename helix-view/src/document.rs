@@ -257,6 +257,7 @@ pub fn from_reader<R: std::io::Read + ?Sized>(
     Ok((rope, encoding))
 }
 
+#[cfg(feature = "tokio-runtime")]
 // The documentation and implementation of this function should be up-to-date with
 // its sibling function, `from_reader()`.
 //
@@ -472,11 +473,11 @@ impl Document {
         // mark changes up to now as saved
         self.reset_modified();
 
+        #[cfg(feature = "tokio-runtime")]
         let encoding = self.encoding;
 
         // We encode the file according to the `Document`'s encoding.
         async move {
-            use tokio::fs::File;
             if let Some(parent) = path.parent() {
                 // TODO: display a prompt asking the user if the directories should be created
                 if !parent.exists() {
@@ -494,7 +495,9 @@ impl Document {
                 }
             }
 
-            let mut file = File::create(path).await?;
+            #[cfg(feature = "tokio-runtime")]
+            let mut file = tokio::fs::File::create(path).await?;
+            #[cfg(feature = "tokio-runtime")]
             to_writer(&mut file, encoding, &text).await?;
 
             #[cfg(feature = "lsp")]
@@ -912,6 +915,7 @@ impl Document {
     }
 
     /// File path as a URL.
+    #[cfg(feature = "lsp")]
     pub fn url(&self) -> Option<Url> {
         Url::from_file_path(self.path()?).ok()
     }
